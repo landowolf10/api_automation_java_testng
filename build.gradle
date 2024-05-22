@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation group: 'org.testng', name: 'testng', version: '7.10.2'
+    implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
+    implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '5.4.0'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.17.1'
+
+}
+
+test {
+    useTestNG() {
+        testLogging.showStandardStreams = true
+        useDefaultListeners = true
+        if (project.hasProperty('booking_test')) { suites './src/test/resources/suites/booking_test.xml' }
+        //reports.html.enabled = false
+        //parallel = "tests"
+        //includeGroups 'Smoke'
+    }
+}
