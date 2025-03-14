@@ -1,15 +1,14 @@
 package com.lando.tests.booking;
 
-import org.lando.api_helpers.BookingAPI;
+import org.lando.api.booking.BookingAPI;
 import org.lando.config.RestAssuredClient;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.restassured.response.Response;
-import org.lando.models.GetBookingResponse;
-import org.lando.models.PostBookingResponse;
+import org.lando.models.request.booking.BookingRequest;
 import org.lando.utils.ReadJsonData;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
@@ -33,41 +32,29 @@ public class BookingTest {
         Assert.assertFalse(bookingAPI.getBookingIds().isEmpty(), "No available booking Ids");
     }
 
-    /*@Test
-    public void validateAvailableStatus() {
-        Assert.assertTrue(bookingHelper.getPetsByAvailableStatus("available").stream().allMatch(status -> status.equals(
-                "available")), "Not all status values are 'available'");
-
-    }*/
-
     //Add new booking
     @Test
-    public void validateCreatedPet() {
+    public void validateCreatedBooking() {
+        //BookingRequest bookingRequest = SetBookingData.setBookingData();
         Response bookingResponse = bookingAPI.createBooking("booking/postBooking");
         long bookingId = bookingResponse.jsonPath().getLong("bookingid");
         Response response = bookingAPI.getBookingByValidId(bookingId);
-
         JsonNode jsonNode = ReadJsonData.getJsonNode("booking/postBooking");
 
         Assert.assertEquals(bookingResponse.getStatusCode(), 200);
         Assert.assertNotNull(bookingResponse.getBody());
         Assert.assertTrue(bookingId > 0);
 
-        Assert.assertEquals(response.jsonPath().getString("firstname"), jsonNode.get("firstname")
-                .asText());
-        Assert.assertEquals(response.jsonPath().getString("lastname"), jsonNode.get("lastname")
-                .asText());
-        Assert.assertEquals(response.jsonPath().getString("totalprice"), jsonNode.get(
-                "totalprice").asText());
-        Assert.assertEquals(response.jsonPath().getString("depositpaid"), jsonNode.get(
-                "depositpaid").asText());
-        Assert.assertEquals(response.jsonPath().getString("additionalneeds"), jsonNode.get(
-                "additionalneeds").asText());
+        Assert.assertEquals(response.jsonPath().getString("firstname"), jsonNode.get("firstname").asText());
+        Assert.assertEquals(response.jsonPath().getString("lastname"), jsonNode.get("lastname").asText());
+        Assert.assertEquals(response.jsonPath().getInt("totalprice"), jsonNode.get("totalprice").asInt());
+        Assert.assertTrue(response.jsonPath().getBoolean("depositpaid"));
+        Assert.assertEquals(response.jsonPath().getString("additionalneeds"), jsonNode.get("additionalneeds").asText());
 
-        /*bookingAPI.getPetCreationResponseSchema()
+        bookingAPI.getBookingCreationResponseSchema()
                 .then()
                 .assertThat()
-                .body(matchesJsonSchemaInClasspath("postPetResponseSchema.json"));*/
+                .body(matchesJsonSchemaInClasspath("postPetResponseSchema.json"));
     }
 
     //Validate booking by id
@@ -91,49 +78,51 @@ public class BookingTest {
     //Update existing booking
     @Test
     public void validateUpdatedBooking() {
-        Response createBooking = bookingAPI.createBooking("booking/postBooking");
+        Response createBooking = bookingAPI.createBooking("booking/updateBooking");
         long bookingId = createBooking.jsonPath().getLong("bookingid");
-        Response bookingResponse = bookingAPI.updatePet("booking/updateBooking", bookingId);
+        Response bookingResponse = bookingAPI.updateBooking("booking/updateBooking", bookingId);
         Response response = bookingAPI.getBookingByValidId(bookingId);
+        JsonNode jsonNode = ReadJsonData.getJsonNode("booking/updateBooking");
 
         Assert.assertEquals(bookingResponse.getStatusCode(), 200);
         Assert.assertNotNull(bookingResponse.getBody());
 
-        JsonNode jsonNode = ReadJsonData.getJsonNode("booking/updateBooking");
+        Assert.assertEquals(response.jsonPath().getString("firstname"), jsonNode.get("firstname").asText());
+        Assert.assertEquals(response.jsonPath().getString("lastname"), jsonNode.get("lastname").asText());
+        Assert.assertEquals(response.jsonPath().getInt("totalprice"), jsonNode.get("totalprice").asInt());
+        Assert.assertTrue(response.jsonPath().getBoolean("depositpaid"));
+        Assert.assertEquals(response.jsonPath().getString("additionalneeds"), jsonNode.get("additionalneeds").asText());
 
-        Assert.assertEquals(response.jsonPath().getString("firstname"), jsonNode.get("firstname")
-                .asText());
-        Assert.assertEquals(response.jsonPath().getString("lastname"), jsonNode.get("lastname")
-                .asText());
-        Assert.assertEquals(response.jsonPath().getString("totalprice"), jsonNode.get(
-                "totalprice").asText());
-        Assert.assertEquals(response.jsonPath().getString("depositpaid"), jsonNode.get(
-                "depositpaid").asText());
-        Assert.assertEquals(response.jsonPath().getString("additionalneeds"), jsonNode.get(
-                "additionalneeds").asText());
-
-        /*bookingAPI.getPetCreationResponseSchema()
+        bookingAPI.getBookingCreationResponseSchema()
                 .then()
                 .assertThat()
-                .body(matchesJsonSchemaInClasspath("updateBookingResponseSchema.json"));*/
+                .body(matchesJsonSchemaInClasspath("updateBookingResponseSchema.json"));
     }
 
-    //Delete a pet
+    //Delete an existing booking
     @Test
     public void validateDeletedBooking() {
         Response createBooking = bookingAPI.createBooking("booking/postBooking");
         long bookingId = createBooking.jsonPath().getLong("bookingid");
         Response bookingResponse = bookingAPI.deleteBooking(bookingId);
+        Response getBookingResponse = bookingAPI.getBookingByValidId(bookingId);
+
 
         Assert.assertEquals(bookingResponse.getStatusCode(), 201);
         Assert.assertNotNull(bookingResponse.getBody());
         Assert.assertEquals(bookingResponse.getBody().asString(), "Created");
+        Assert.assertEquals(getBookingResponse.getBody().asString(), "Not Found");
     }
 
     /*********************************************Edge cases*********************************************/
-    //Get error when trying to get a pet by status with an invalid status
+    //Get error when trying to get a bookin by id with an unexisting id
+    @Test
+    public void getBookingByInvalidId() {
+        Response getBookingResponse = bookingAPI.getBookingByValidId(1234567890);
 
-    //Get empty body when trying to get an unexisting status
+        System.out.println("Invalid Id response: " + getBookingResponse.getBody().asString());
+        Assert.assertEquals(getBookingResponse.getBody().asString(), "Not Found");
+    }
 
     //Get error when trying to get a pet by status with a wrong/malformed endpoint
 

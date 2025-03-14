@@ -1,14 +1,10 @@
-package org.lando.api_helpers;
+package org.lando.api.booking;
 
 import io.restassured.RestAssured;
 import org.lando.config.RestAssuredClient;
 import io.restassured.response.Response;
-import org.lando.models.GetBookingResponse;
-import org.lando.utils.ReadJsonData;
+import org.lando.models.request.booking.BookingRequest;
 
-
-import java.math.BigInteger;
-import java.util.HashMap;
 import java.util.List;
 
 public class BookingAPI extends RestAssuredClient {
@@ -24,27 +20,25 @@ public class BookingAPI extends RestAssuredClient {
         return response.path("$");
     }
 
-    /*public List<String> getPetsByAvailableStatus(String status) {
-        Response response = get("/pet/findByStatus?status=" + status);
-
-        return response.jsonPath().getList("status");
-    }*/
-
     public Response getBookingByValidId(long bookingId) {
         return RestAssured.get("/booking/" + bookingId);
     }
 
-    public Response createBooking(String postJsonFile) {
+    public Response createBooking(String postJsonFile) { //BookingRequest bookingRequest
+        String bookingJson = BookingObjectMapper.bookingObjectMapper(postJsonFile);
+
         return RestAssured.given()
-                .body(ReadJsonData.readJsonFile(postJsonFile))
+                .body(bookingJson) //bookingRequest
                 .when()
                 .post("/booking");
     }
 
-    public Response updatePet(String putJsonFile, long bookingIdUpdate) {
+    public Response updateBooking(String updateJsonFile, long bookingIdUpdate) {
+        String bookingJson = BookingObjectMapper.bookingObjectMapper(updateJsonFile);
+
         return RestAssured.given()
                 .header("Authorization", "Basic YWRtaW46cGFzc3dvcmQxMjM=")
-                .body(ReadJsonData.readJsonFile(putJsonFile))
+                .body(bookingJson)
                 .when()
                 .put("/booking/" + bookingIdUpdate);
     }
@@ -61,7 +55,7 @@ public class BookingAPI extends RestAssuredClient {
         return RestAssured.get("/booking/" + bookingId);
     }
 
-    public Response getPetCreationResponseSchema() {
+    public Response getBookingCreationResponseSchema() {
 
         return RestAssured.get("/booking/");
     }
