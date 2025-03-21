@@ -5,6 +5,17 @@ plugins {
 group = 'org.example'
 version = '1.0-SNAPSHOT'
 
+def allureVersion = "2.29.1"
+// Define the version of AspectJ
+def aspectJVersion = "1.9.20.1"
+// Define configuration for AspectJ agent
+configurations {
+    agent {
+        canBeResolved = true
+        canBeConsumed = true
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -14,12 +25,20 @@ dependencies {
     implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
     implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '5.4.0'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.17.1'
+    // Import allure-bom to ensure correct versions of all the dependencies are used
+    testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
+    // Add necessary Allure dependencies to dependencies section
+    testImplementation "io.qameta.allure:allure-testng"
+    // Add aspectjweaver dependency
+    agent "org.aspectj:aspectjweaver:$aspectJVersion"
+    implementation group: 'com.aventstack', name: 'extentreports', version: '5.1.2'
 }
 
 test {
     useTestNG() {
         testLogging.showStandardStreams = true
         useDefaultListeners = true
+        jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
 
         def suiteFile = System.getProperty("suiteXmlFile")
         if (suiteFile != null) {

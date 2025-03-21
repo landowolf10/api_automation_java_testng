@@ -1,17 +1,21 @@
 package com.lando.tests.booking;
 
+import com.lando.tests.TestListener;
+import io.qameta.allure.*;
+import io.qameta.allure.testng.Tag;
 import org.lando.api.booking.BookingAPI;
 import org.lando.config.RestAssuredClient;
 import io.restassured.response.Response;
-import org.lando.models.request.booking.BookingRequest;
 import org.lando.utils.ReadJsonData;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
+@Listeners(TestListener.class)
 public class BookingTest {
     BookingAPI bookingAPI = new BookingAPI();
     RestAssuredClient restAssuredClient = new RestAssuredClient();
@@ -22,19 +26,38 @@ public class BookingTest {
     }
 
     /*********************************************Happy paths*********************************************/
-    @Test
+    @Test(description = "Validates that the response code of the API is 200")
     public void validateStatusCode() {
+        Allure.getLifecycle().updateTestCase(testResult -> {
+            testResult.setName("Validates that the response code of the API is 200");
+        });
+
         Assert.assertEquals(bookingAPI.validStatusCode(), 200);
     }
 
-    @Test
+    @Test(description = "Validates that API is responding with Id's")
+    @Severity(SeverityLevel.MINOR)
     public void validateBookingIds() {
+        Allure.getLifecycle().updateTestCase(testResult -> {
+            testResult.setName("Validates that API is responding with Id's");
+        });
         Assert.assertFalse(bookingAPI.getBookingIds().isEmpty(), "No available booking Ids");
     }
 
     //Add new booking
-    @Test
+    @Test(description = "Validates that the API is creating a booking")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("POST API endpoint to create a booking")
+    @Owner("Orlando")
+    @Tag("Booking")
+    @Epic("Backend")
+    @Feature("Create booking API")
+    @Story("LM-12124-Create booking")
     public void validateCreatedBooking() {
+        Allure.getLifecycle().updateTestCase(testResult -> {
+            testResult.setName("Validates that the API is creating a booking");
+        });
+
         //BookingRequest bookingRequest = SetBookingData.setBookingData();
         Response bookingResponse = bookingAPI.createBooking("booking/postBooking");
         long bookingId = bookingResponse.jsonPath().getLong("bookingid");
@@ -58,7 +81,7 @@ public class BookingTest {
     }
 
     //Validate booking by id
-    @Test
+    @Test(description = "Gets a booking by id")
     public void validateBookingById() {
         Response createBooking = bookingAPI.createBooking("booking/postBooking");
         long bookingId = createBooking.jsonPath().getLong("bookingid");
@@ -76,7 +99,7 @@ public class BookingTest {
     }
 
     //Update existing booking
-    @Test
+    @Test(description = "Validates that a given booking can be updated")
     public void validateUpdatedBooking() {
         Response createBooking = bookingAPI.createBooking("booking/updateBooking");
         long bookingId = createBooking.jsonPath().getLong("bookingid");
@@ -100,7 +123,7 @@ public class BookingTest {
     }
 
     //Delete an existing booking
-    @Test
+    @Test(description = "Validates that a booking can be deleted")
     public void validateDeletedBooking() {
         Response createBooking = bookingAPI.createBooking("booking/postBooking");
         long bookingId = createBooking.jsonPath().getLong("bookingid");
@@ -116,7 +139,7 @@ public class BookingTest {
 
     /*********************************************Edge cases*********************************************/
     //Get error when trying to get a bookin by id with an unexisting id
-    @Test
+    @Test(description = "Validates the response when trying to get a booking by invalid id")
     public void getBookingByInvalidId() {
         Response getBookingResponse = bookingAPI.getBookingByValidId(1234567890);
 
@@ -124,7 +147,16 @@ public class BookingTest {
         Assert.assertEquals(getBookingResponse.getBody().asString(), "Not Found");
     }
 
-    //Get error when trying to get a pet by status with a wrong/malformed endpoint
+    //Get error when trying to get a booking by status with a wrong/malformed endpoint
+    @Test(description = "Validates the response when trying to get a booking with a malformed endpoint")
+    public void getMalformedEndpoint() {
+        Response createBooking = bookingAPI.createBooking("booking/postBooking");
+        long bookingId = createBooking.jsonPath().getLong("bookingid");
+        Response getBookingResponse = bookingAPI.getMalformedEndpoint(bookingId);
+
+        System.out.println("Malformed endpoint response: " + getBookingResponse.getBody().asString());
+        //Assert.assertEquals(getBookingResponse.getBody().asString(), "Not Found");
+    }
 
     //Get error when trying to add a pet with a wrong/malformed endpoint
 

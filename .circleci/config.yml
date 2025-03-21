@@ -10,6 +10,13 @@ jobs:
           command: |
             chmod +x gradlew
              ./gradlew clean test
+      - store_artifacts:
+          path: allure-report
+          destination: allure-report
+
+      - store_artifacts:
+          path: test-output/ExtentReport.html
+          destination: extent-report
 
 workflows:
   version: 2

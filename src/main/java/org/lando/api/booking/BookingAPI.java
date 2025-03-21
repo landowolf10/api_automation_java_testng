@@ -59,4 +59,8 @@ public class BookingAPI extends RestAssuredClient {
 
         return RestAssured.get("/booking/");
     }
+
+    public Response getMalformedEndpoint(long bookingId) {
+        return RestAssured.get("/booki" + bookingId);
+    }
 }
