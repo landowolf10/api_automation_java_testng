@@ -31,7 +31,21 @@ jobs:
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5 # v3.1.0
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew clean test
+        run: ./gradlew clean test allureReport
+
+      - name: Upload Allure Report
+        uses: actions/upload-artifact@v4
+        with:
+            name: allure-report
+            path: allure-report
+            retention-days: 5
+
+      - name: Upload ExtentReport
+        uses: actions/upload-artifact@v4
+        with:
+            name: extent-report
+            path: test-output/ExtentReport.html
+            retention-days: 5
 
   dependency-submission:
     runs-on: ubuntu-latest
