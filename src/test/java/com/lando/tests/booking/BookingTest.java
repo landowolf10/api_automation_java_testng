@@ -8,7 +8,7 @@ import org.lando.config.RestAssuredClient;
 import io.restassured.response.Response;
 import org.lando.utils.ReadJsonData;
 import org.testng.Assert;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,7 +20,7 @@ public class BookingTest {
     BookingAPI bookingAPI = new BookingAPI();
     RestAssuredClient restAssuredClient = new RestAssuredClient();
 
-    @BeforeTest
+    @BeforeSuite
     public void setUp() {
         restAssuredClient.setupRestAssured();
     }
@@ -77,7 +77,7 @@ public class BookingTest {
         bookingAPI.getBookingCreationResponseSchema()
                 .then()
                 .assertThat()
-                .body(matchesJsonSchemaInClasspath("postPetResponseSchema.json"));
+                .body(matchesJsonSchemaInClasspath("json_schemas/postPetResponseSchema.json"));
     }
 
     //Validate booking by id
@@ -95,7 +95,7 @@ public class BookingTest {
         bookingAPI.getBookingSchema(bookingId)
                 .then()
                 .assertThat()
-                .body(matchesJsonSchemaInClasspath("getBookingSchema.json"));
+                .body(matchesJsonSchemaInClasspath("json_schemas/getBookingSchema.json"));
     }
 
     //Update existing booking
@@ -119,7 +119,7 @@ public class BookingTest {
         bookingAPI.getBookingCreationResponseSchema()
                 .then()
                 .assertThat()
-                .body(matchesJsonSchemaInClasspath("updateBookingResponseSchema.json"));
+                .body(matchesJsonSchemaInClasspath("json_schemas/updateBookingResponseSchema.json"));
     }
 
     //Delete an existing booking

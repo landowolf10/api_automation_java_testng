@@ -21,6 +21,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.testng:testng:7.10.2'
     testImplementation group: 'org.testng', name: 'testng', version: '7.10.2'
     implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
     implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '5.4.0'
