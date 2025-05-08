@@ -3,7 +3,7 @@ package com.lando.tests;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
-import org.lando.utils.ExtentManager;
+import org.lando.api.utils.ExtentManager;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
