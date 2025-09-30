@@ -17,12 +17,7 @@ jobs:
         run: docker build -t gradle-tests .
 
       - name: Run tests inside Docker
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/app \
-            -w /app \
-            gradle-tests \
-            ./gradlew clean test allureReport
+        run: docker run --rm gradle-tests ./gradlew clean test allureReport
 
       - name: Upload Allure Report Artifact
         uses: actions/upload-artifact@v4
