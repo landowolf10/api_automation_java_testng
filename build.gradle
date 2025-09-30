@@ -6,7 +6,6 @@ group = 'org.example'
 version = '1.0-SNAPSHOT'
 
 def allureVersion = "2.29.1"
-// Define the version of AspectJ
 def aspectJVersion = "1.9.20.1"
 
 configurations {
@@ -21,26 +20,19 @@ repositories {
 }
 
 dependencies {
-    // TestNG
     implementation 'org.testng:testng:7.10.2'
-    testImplementation group: 'org.testng', name: 'testng', version: '7.10.2'
+    testImplementation "org.testng:testng:7.10.2"
 
-    // Rest Assured
-    implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
-    implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '5.4.0'
+    implementation "io.rest-assured:rest-assured:5.4.0"
+    implementation "io.rest-assured:json-schema-validator:5.4.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.17.1"
 
-    // Jackson
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.17.1'
-
-    // Allure
     testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
     testImplementation "io.qameta.allure:allure-testng"
 
-    // AspectJ
     agent "org.aspectj:aspectjweaver:$aspectJVersion"
 
-    // Extent Reports
-    implementation group: 'com.aventstack', name: 'extentreports', version: '5.1.2'
+    implementation "com.aventstack:extentreports:5.1.2"
 }
 
 test {
@@ -48,6 +40,7 @@ test {
         testLogging.showStandardStreams = true
         useDefaultListeners = true
         jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
+        systemProperty "allure.results.directory", "$buildDir/allure-results"
 
         def suiteFile = System.getProperty("suiteXmlFile")
         if (suiteFile != null) {
@@ -59,14 +52,15 @@ test {
     }
 }
 
-// ==========================
-// Allure Report Task
-// ==========================
-import org.gradle.api.tasks.Exec
-
 tasks.register('allureReport', Exec) {
     group = "verification"
     description = "Genera el reporte de Allure"
+
+    dependsOn test
+
+    doFirst {
+        file("$buildDir/allure-results").mkdirs()
+    }
 
     inputs.dir("$buildDir/allure-results")
     outputs.dir("$buildDir/reports/allure-report")

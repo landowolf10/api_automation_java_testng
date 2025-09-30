@@ -1,6 +1,4 @@
-# ==========================
 # Base image with Java 21
-# ==========================
 FROM eclipse-temurin:21-jdk-jammy
 
 # ==========================
@@ -23,20 +21,20 @@ RUN wget https://github.com/allure-framework/allure2/releases/download/2.30.0/al
     && ln -s /opt/allure-2.30.0/bin/allure /usr/bin/allure
 
 # ==========================
-# Create working directory
+# Create working dir
 # ==========================
 WORKDIR /app
 
 # ==========================
-# Copy Gradle wrapper and config first (cache dependencies)
+# Copy needed files for Gradle (for caching dependencies)
 # ==========================
 COPY build.gradle settings.gradle gradlew ./
 COPY gradle ./gradle
 
-# Make gradlew executable
+# Wrapper permission
 RUN chmod +x ./gradlew
 
-# Download dependencies without running tests
+# Download dependencies (without executing tests)
 RUN ./gradlew dependencies --no-daemon || true
 
 # ==========================
@@ -44,13 +42,10 @@ RUN ./gradlew dependencies --no-daemon || true
 # ==========================
 COPY src ./src
 
-# Ensure gradlew is executable (important if copied from host)
-RUN chmod +x ./gradlew
-
-# Compile project without running tests
+# Compile without running tests
 RUN ./gradlew clean build -x test --no-daemon
 
 # ==========================
-# Default command for CI/CD
+# Default command
 # ==========================
 CMD ["./gradlew", "clean", "test", "allureReport"]
