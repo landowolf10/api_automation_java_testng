@@ -8,7 +8,7 @@ version = '1.0-SNAPSHOT'
 def allureVersion = "2.29.1"
 // Define the version of AspectJ
 def aspectJVersion = "1.9.20.1"
-// Define configuration for AspectJ agent
+
 configurations {
     agent {
         canBeResolved = true
@@ -21,14 +21,25 @@ repositories {
 }
 
 dependencies {
+    // TestNG
     implementation 'org.testng:testng:7.10.2'
     testImplementation group: 'org.testng', name: 'testng', version: '7.10.2'
+
+    // Rest Assured
     implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
     implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '5.4.0'
+
+    // Jackson
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.17.1'
+
+    // Allure
     testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
     testImplementation "io.qameta.allure:allure-testng"
+
+    // AspectJ
     agent "org.aspectj:aspectjweaver:$aspectJVersion"
+
+    // Extent Reports
     implementation group: 'com.aventstack', name: 'extentreports', version: '5.1.2'
 }
 
@@ -40,13 +51,28 @@ test {
 
         def suiteFile = System.getProperty("suiteXmlFile")
         if (suiteFile != null) {
-            println "Ejecutando suite: $suiteFile" // Para depuración
+            println "Executing suite: $suiteFile"
             suites suiteFile
         } else {
-            println "No se especificó suiteXmlFile, ejecutando tests por defecto."
+            println "No suiteXmlFile specified, executing default tests (all tests)."
         }
-        //reports.html.enabled = false
-        //parallel = "tests"
-        //includeGroups 'Smoke'
     }
+}
+
+// ==========================
+// Allure Report Task
+// ==========================
+import org.gradle.api.tasks.Exec
+
+tasks.register('allureReport', Exec) {
+    group = "verification"
+    description = "Genera el reporte de Allure"
+
+    inputs.dir("$buildDir/allure-results")
+    outputs.dir("$buildDir/reports/allure-report")
+
+    commandLine "allure", "generate",
+            "$buildDir/allure-results",
+            "-o", "$buildDir/reports/allure-report",
+            "--clean"
 }
