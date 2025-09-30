@@ -22,7 +22,7 @@ public class ApiConfig {
     }
 
     /**
-     * Carga la configuración desde application.properties
+     * Loads the config from application.properties
      */
     private static void loadConfig() {
         properties = new Properties();
@@ -33,25 +33,25 @@ public class ApiConfig {
             //AUTH_TOKEN = properties.getProperty("auth.token", "defaultToken");
             ENVIRONMENT = properties.getProperty("environment", "dev");
         } catch (IOException e) {
-            System.err.println("Error al cargar la configuración: " + e.getMessage());
-            throw new RuntimeException("No se pudo cargar el archivo de configuración.");
+            System.err.println("Error while loading configuration: " + e.getMessage());
+            throw new RuntimeException("The configuration file could not be loaded.");
         }
     }
 
     /**
-     * Obtiene el valor de una propiedad específica.
-     * @param key - Clave de la propiedad.
-     * @return Valor de la propiedad.
+     * Gets the value of a specific property.
+     * @param key - Property key.
+     * @return Property value.
      */
     public static String getProperty(String key) {
         return properties.getProperty(key);
     }
 
     /**
-     * Obtiene el valor de una propiedad con un valor predeterminado.
-     * @param key - Clave de la propiedad.
-     * @param defaultValue - Valor predeterminado si no existe.
-     * @return Valor de la propiedad o el valor predeterminado.
+     * Gets the value of a specific property with a default value
+     * @param key - Property key.
+     * @param defaultValue - Default value if doesn't exists.
+     * @return Property value or the default value.
      */
     public static String getProperty(String key, String defaultValue) {
         return properties.getProperty(key, defaultValue);

@@ -1,0 +1,1 @@
+{"uuid":"46c06078-4523-461f-9b2f-caca3afd7357","name":"Parallel Test Suite","children":["1816a2e1-160e-43e3-8bb4-fac67bfd72e3"],"befores":[{"name":"setup","status":"passed","stage":"finished","description":"","steps":[],"attachments":[],"parameters":[],"start":1758923781985,"stop":1758923782754}],"afters":[],"start":1758923781961,"stop":1758923785133}

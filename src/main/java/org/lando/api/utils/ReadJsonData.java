@@ -10,6 +10,7 @@ public class ReadJsonData {
 
     public static InputStream readJsonFile(String jsonFile) {
         try {
+            System.out.println("Json path: " + baseJsonPath + jsonFile);
             return new FileInputStream(baseJsonPath + jsonFile + ".json");
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);

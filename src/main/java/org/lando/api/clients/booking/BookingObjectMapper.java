@@ -16,9 +16,9 @@ public class BookingObjectMapper {
             /*
              * Here we can set values to the object if we
              * need/want to change some values
-             * i.e: bookingRequest.setFirstname("Andy");
+             * i.e: bookingRequest.setFirstname("John");
              */
-            //bookingRequest.setFirstname("Wolf");
+            //bookingRequest.setFirstname("Doe");
 
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(bookingRequest);
         } catch (Exception e) {

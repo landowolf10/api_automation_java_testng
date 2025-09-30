@@ -1,30 +1,24 @@
-# Usa la imagen oficial de Java 21
+# Imagen base con Java 21
 FROM eclipse-temurin:21-jdk-jammy
 
+# Crear carpeta de trabajo
 WORKDIR /app
 
-# Copia el POM primero para aprovechar la caché de Docker
-COPY pom.xml .
+# Copiar los archivos necesarios de Gradle primero (para cache de dependencias)
+COPY build.gradle settings.gradle gradlew ./
+COPY gradle ./gradle
 
-# Instala Maven
-RUN apt-get update && apt-get install -y maven
+# Dar permisos al wrapper
+RUN chmod +x ./gradlew
 
-# Copia los archivos fuente
+# Descargar dependencias (sin ejecutar tests)
+RUN ./gradlew dependencies --no-daemon || true
+
+# Copiar el código fuente
 COPY src ./src
 
-# Compila el proyecto
-RUN mvn clean package -DskipTests
+# Compilar sin correr tests
+RUN ./gradlew clean build -x test --no-daemon
 
-# Copia el script de entrada
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
-
-# Variables de entorno para configuración
-ENV ENV=dev
-ENV THREADS=1
-ENV TAGS=""
-
-# Puerto para Allure Reports (si lo usas)
-EXPOSE 5050
-
-ENTRYPOINT ["./entrypoint.sh"]
+# Comando por defecto (puedes sobreescribirlo al ejecutar)
+CMD ["./gradlew", "test"]

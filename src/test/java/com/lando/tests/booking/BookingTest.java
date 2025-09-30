@@ -4,48 +4,48 @@ import com.lando.tests.TestListener;
 import io.qameta.allure.*;
 import io.qameta.allure.testng.Tag;
 import org.lando.api.clients.booking.BookingClient;
-import org.lando.api.config.RestAssuredConfig;
 import io.restassured.response.Response;
 import org.lando.api.exceptions.ApiException;
 import org.lando.api.services.BookingService;
+import org.lando.api.utils.BaseTest;
 import org.testng.Assert;
-import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.util.HashMap;
 
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
+@Epic("Backend")
+@Feature("Booking API")
 @Listeners(TestListener.class)
-public class BookingTest {
-    BookingClient bookingClient = new BookingClient();
-    BookingService bookingService = new BookingService(bookingClient);
-    RestAssuredConfig restAssuredConfig = new RestAssuredConfig();
+public class BookingTest extends BaseTest {
+    private final BookingService bookingService = new BookingService(new BookingClient());
 
-    @BeforeSuite
-    public void setUp() {
-        restAssuredConfig.setupRestAssured();
-    }
+    private static final String POST_PAYLOAD = "booking/postBooking";
+    private static final String UPDATE_PAYLOAD = "booking/updateBooking";
+    private static final String UPDATE_SCHEMA = "json_schemas/updateBookingResponseSchema.json";
+    private static final String CREATE_SCHEMA = "json_schemas/postBookingResponseSchema.json";
+    private static final String GET_SCHEMA = "json_schemas/getBookingSchema.json";
 
     /*********************************************Happy paths*********************************************/
     @Test(description = "Validates that the response code of the API is 200")
+    @Severity(SeverityLevel.CRITICAL)
+    @Owner("Orlando")
+    @Story("LM-12120-Healthcheck")
     public void validateStatusCode() {
-        Allure.getLifecycle().updateTestCase(testResult -> {
-            testResult.setName("Validates that the response code of the API is 200");
-        });
-
-        Assert.assertEquals(bookingService.validateStatusCode("/booking"), 200);
+        int status = bookingService.validateStatusCode("/booking");
+        Assert.assertEquals(status, 200, "Expected status 200 but got " + status);
     }
 
     @Test(description = "Validates that API is responding with Id's")
     @Severity(SeverityLevel.MINOR)
+    @Owner("Orlando")
+    @Story("LM-12121-Get Bookings")
     public void validateBookingIds() {
-        Allure.getLifecycle().updateTestCase(testResult -> {
-            testResult.setName("Validates that API is responding with Id's");
-        });
-        Assert.assertFalse(bookingService.getBookingIds().isEmpty(), "No available booking Ids");
+        Response response = bookingService.getBookingIds();
+        Assert.assertEquals(response.statusCode(), 200);
+        Assert.assertFalse(response.getBody().asString().isEmpty(), "No available booking Ids");
     }
 
     //Add new booking
@@ -58,30 +58,31 @@ public class BookingTest {
     @Feature("Create booking API")
     @Story("LM-12124-Create booking")
     public void validateCreatedBooking() {
-        Allure.step("Prepare test data");
-        final String testDataPath = "booking/postBooking.json";
+        final String payload = "booking/postBooking";
 
         try {
-            HashMap<String, Object> createBookingObj = bookingService.createValidBooking("booking/postBooking");
-            Response getResponse = (Response) createBookingObj.get("getResponse");
-            JsonNode jsonNode = (JsonNode) createBookingObj.get("jsonNode");
-            long bookingId = (long) createBookingObj.get("bookingId");
+            BookingService.BookingResult result = bookingService.createValidBooking(payload);
 
+            Response getResponse = result.response();
+            JsonNode jsonNode = result.payload();
+            long bookingId = result.bookingId();
 
-            Allure.getLifecycle().updateTestCase(testResult -> {
+            /*Allure.getLifecycle().updateTestCase(testResult -> {
                 testResult.setName("Validates that the API is creating a booking");
-            });
+            });*/
 
             Assert.assertEquals(getResponse.statusCode(), 200);
             Assert.assertNotNull(getResponse.getBody());
             Assert.assertTrue(bookingId > 0);
 
+            // Field validations
             Assert.assertEquals(getResponse.jsonPath().getString("firstname"), jsonNode.get("firstname").asText());
             Assert.assertEquals(getResponse.jsonPath().getString("lastname"), jsonNode.get("lastname").asText());
             Assert.assertEquals(getResponse.jsonPath().getInt("totalprice"), jsonNode.get("totalprice").asInt());
             Assert.assertTrue(getResponse.jsonPath().getBoolean("depositpaid"));
             Assert.assertEquals(getResponse.jsonPath().getString("additionalneeds"), jsonNode.get("additionalneeds").asText());
 
+            // Schema validation
             bookingService.getBookingCreationResponseSchema()
                     .then()
                     .assertThat()
@@ -94,15 +95,17 @@ public class BookingTest {
 
             Assert.fail("Failed to create booking: " + e.getMessage());
         }
-
     }
 
     //Validate booking by id
     @Test(description = "Gets a booking by id")
+    @Severity(SeverityLevel.NORMAL)
+    @Owner("Orlando")
+    @Story("LM-12125-Get Booking by Id")
     public void validateBookingById() {
-        HashMap<String, Object> validateBookingById = bookingService.validateBookingById("booking/postBooking");
-        Response getResponse = (Response) validateBookingById.get("getResponse");
-        long bookingId = (long) validateBookingById.get("bookingId");
+        BookingService.BookingResult result = bookingService.validateBookingById(POST_PAYLOAD);
+        Response getResponse = result.response();
+        long bookingId = result.bookingId();
 
         Assert.assertEquals(getResponse.getStatusCode(), 200);
         Assert.assertNotNull(getResponse.getBody());
@@ -115,54 +118,59 @@ public class BookingTest {
 
     //Update existing booking
     @Test(description = "Validates that a given booking can be updated")
+    @Severity(SeverityLevel.CRITICAL)
+    @Owner("Orlando")
+    @Story("LM-12126-Update Booking")
     public void validateUpdatedBooking() {
-        HashMap<String, Object> updateBookingObj = bookingService.validateUpdatedBooking("booking/postBooking");
-        Response getResponse = (Response) updateBookingObj.get("getResponse");
-        Response updateBookingResponse = (Response) updateBookingObj.get("updateBookingResponse");
-        JsonNode jsonNode = (JsonNode) updateBookingObj.get("jsonNode");
+        BookingService.BookingResult result = bookingService.validateUpdatedBooking(UPDATE_PAYLOAD);
+        Response updateResponse = result.response();
+        JsonNode jsonNode = result.payload();
 
-        Assert.assertEquals(updateBookingResponse.getStatusCode(), 200);
-        Assert.assertNotNull(updateBookingResponse.getBody());
+        Assert.assertEquals(updateResponse.getStatusCode(), 200);
+        Assert.assertNotNull(updateResponse.getBody());
 
-        Assert.assertEquals(getResponse.jsonPath().getString("firstname"), jsonNode.get("firstname").asText());
-        Assert.assertEquals(getResponse.jsonPath().getString("lastname"), jsonNode.get("lastname").asText());
-        Assert.assertEquals(getResponse.jsonPath().getInt("totalprice"), jsonNode.get("totalprice").asInt());
-        Assert.assertTrue(getResponse.jsonPath().getBoolean("depositpaid"));
-        Assert.assertEquals(getResponse.jsonPath().getString("additionalneeds"), jsonNode.get("additionalneeds").asText());
+        Assert.assertEquals(updateResponse.jsonPath().getString("firstname"), jsonNode.get("firstname").asText());
+        Assert.assertEquals(updateResponse.jsonPath().getString("lastname"), jsonNode.get("lastname").asText());
+        Assert.assertEquals(updateResponse.jsonPath().getInt("totalprice"), jsonNode.get("totalprice").asInt());
+        Assert.assertTrue(updateResponse.jsonPath().getBoolean("depositpaid"));
+        Assert.assertEquals(updateResponse.jsonPath().getString("additionalneeds"), jsonNode.get("additionalneeds")
+                .asText());
+
 
         bookingService.getBookingCreationResponseSchema()
                 .then()
                 .assertThat()
-                .body(matchesJsonSchemaInClasspath("json_schemas/updateBookingResponseSchema.json"));
+                .body(matchesJsonSchemaInClasspath(UPDATE_SCHEMA));
     }
 
     //Delete an existing booking
     @Test(description = "Validates that a booking can be deleted")
+    @Severity(SeverityLevel.CRITICAL)
+    @Owner("Orlando")
+    @Story("LM-12127-Delete Booking")
     public void validateDeletedBooking() {
-        HashMap<String, Object> deleteBookingObj = bookingService.validateDeletedBooking("booking/postBooking");
-        Response deleteBookingResponse = (Response) deleteBookingObj.get("deleteBookingResponse");
-        Response getBookingResponse = (Response) deleteBookingObj.get("getBookingResponse");
-
-
-        Assert.assertEquals(deleteBookingResponse.getStatusCode(), 201);
-        Assert.assertNotNull(deleteBookingResponse.getBody());
-        Assert.assertEquals(deleteBookingResponse.getBody().asString(), "Created");
-        Assert.assertEquals(getBookingResponse.getBody().asString(), "Not Found");
+        Response deleteResponse = bookingService.validateDeletedBooking(POST_PAYLOAD);
+        Assert.assertEquals(deleteResponse.getStatusCode(), 201);
+        Assert.assertEquals(deleteResponse.getBody().asString(), "Created");
     }
 
     /*********************************************Edge cases*********************************************/
     //Get error when trying to get a bookin by id with an unexisting id
     @Test(description = "Validates the response when trying to get a booking by invalid id")
-    public void getBookingByInvalidId() {
-        Response getInvalidId = bookingService.getBookingByInvalidId(1234567890);
-        Assert.assertEquals(getInvalidId.getBody().asString(), "Not Found");
+    @Severity(SeverityLevel.MINOR)
+    public void getBookingByIdRaw() {
+        Response invalidResponse = bookingService.getBookingByIdRaw(9999999);
+        Assert.assertEquals(invalidResponse.getStatusCode(), 404);
+        Assert.assertEquals(invalidResponse.getBody().asString(), "Not Found");
     }
 
     //Get error when trying to get a booking by status with a wrong/malformed endpoint
     @Test(description = "Validates the response when trying to get a booking with a malformed endpoint")
+    @Severity(SeverityLevel.MINOR)
     public void getMalformedEndpoint() {
-        Response malformedEndpoint = bookingService.getMalformedEndpoint();
-        Assert.assertEquals(malformedEndpoint.getBody().asString(), "Not Found");
+        Response malformedResponse = bookingService.getMalformedEndpoint(POST_PAYLOAD);
+        Assert.assertEquals(malformedResponse.getStatusCode(), 404);
+        Assert.assertEquals(malformedResponse.getBody().asString(), "Not Found");
     }
 
     //Get error when trying to add a pet with a wrong/malformed endpoint

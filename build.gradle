@@ -26,11 +26,8 @@ dependencies {
     implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
     implementation group: 'io.rest-assured', name: 'json-schema-validator', version: '5.4.0'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.17.1'
-    // Import allure-bom to ensure correct versions of all the dependencies are used
     testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
-    // Add necessary Allure dependencies to dependencies section
     testImplementation "io.qameta.allure:allure-testng"
-    // Add aspectjweaver dependency
     agent "org.aspectj:aspectjweaver:$aspectJVersion"
     implementation group: 'com.aventstack', name: 'extentreports', version: '5.1.2'
 }

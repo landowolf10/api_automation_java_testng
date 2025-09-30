@@ -1,106 +1,55 @@
 package org.lando.api.clients.booking;
 
-import org.lando.api.config.RestAssuredConfig;
+import org.lando.api.clients.BaseClient;
 import io.restassured.response.Response;
 import org.lando.api.exceptions.ApiException;
 
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
-
-public class BookingClient extends RestAssuredConfig {
-    private void validateResponse(Response response, String operation, String endpoint) {
-        if (response.statusCode() >= 400) {
-            throw new ApiException(
-                    "API Operation Failed: " + operation,
-                    response.statusCode(),
-                    response.getBody().asString(),
-                    endpoint
-            );
-        }
-    }
+public class BookingClient extends BaseClient {
+    private static final String BASE_ENDPOINT = "/booking";
 
     public int validStatusCode(String endpoint) {
-        Response response = given()
-                .spec(requestSpec)
-                .when()
-                .get(endpoint);
-
-        validateResponse(response, "GET status check", endpoint);
-        return response.getStatusCode();
+        return get(endpoint).getStatusCode();
     }
 
-    public List<String> getBookingIds() {
-        String endpoint = "/booking";
-        Response response = given()
-                .spec(requestSpec)
-                .when()
-                .get(endpoint);
-
-        validateResponse(response, "Get Booking IDs", endpoint);
-        return response.path("$");
+    public Response getBookingIds() {
+        return get(BASE_ENDPOINT);
     }
 
     public Response getBookingByValidId(long bookingId) {
-        String endpoint = "/booking/" + bookingId;
-        return given()
-                .spec(requestSpec)
-                .when()
-                .get(endpoint);
-
-        //validateResponse(response, "Get Booking by ID", endpoint);
+        return get(BASE_ENDPOINT + "/" + bookingId);
     }
 
     public Response createBooking(String postJsonFile) {
-        String endpoint = "/booking";
         String bookingJson = BookingObjectMapper.bookingObjectMapper(postJsonFile);
 
-        Response response = given()
-                .spec(requestSpec)
-                .body(bookingJson)
-                .when()
-                .post(endpoint);
-
-        validateResponse(response, "Create Booking", endpoint);
-        return response;
+        return post(BASE_ENDPOINT, bookingJson);
     }
 
-    public Response updateBooking(String updateJsonFile, long bookingIdUpdate) {
+    public Response updateBooking(String updateJsonFile, long bookingIdUpdate, String authHeader) {
         String bookingJson = BookingObjectMapper.bookingObjectMapper(updateJsonFile);
 
-        return given()
-               .spec(requestSpec)
-               .header("Authorization", "Basic YWRtaW46cGFzc3dvcmQxMjM=")
-               .body(bookingJson)
-               .when()
-               .put("/booking/" + bookingIdUpdate);
+        return put(BASE_ENDPOINT + "/" + bookingIdUpdate, bookingJson, authHeader);
     }
 
-    public Response deleteBooking(long bookingId) {
-        return given()
-               .spec(requestSpec)
-               .header("Authorization", "Basic YWRtaW46cGFzc3dvcmQxMjM=")
-               .when()
-               .delete("/booking/" + bookingId);
+    public Response deleteBooking(long bookingId, String authHeader) {
+        return delete(BASE_ENDPOINT + "/" + bookingId, authHeader);
     }
 
     public Response getBookingSchema(long bookingId) {
-
-        return given()
-               .spec(requestSpec)
-               .get("/booking/" + bookingId);
+        return get(BASE_ENDPOINT + "/" + bookingId);
     }
 
     public Response getBookingCreationResponseSchema() {
-
-        return given()
-               .spec(requestSpec)
-               .get("/booking/");
+        return get(BASE_ENDPOINT);
     }
 
-    public Response getMalformedEndpoint(long bookingId) {
-        return given()
-               .spec(requestSpec)
-               .get("/booki" + bookingId);
+    public Response getBookingByIdRaw(long bookingId) {
+        return requestSpec().get(BASE_ENDPOINT + "/" + bookingId);
+    }
+
+    public Response getMalformedEndpointRaw(long bookingId) {
+        return requestSpec().get("/booki" + bookingId);
     }
 }

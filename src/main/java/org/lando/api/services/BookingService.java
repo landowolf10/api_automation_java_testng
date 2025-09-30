@@ -3,117 +3,87 @@ package org.lando.api.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.restassured.response.Response;
 import org.lando.api.clients.booking.BookingClient;
-import org.lando.api.exceptions.ApiException;
-import org.lando.api.models.request.booking.BookingRequest;
-import org.lando.api.models.response.BookingResponse;
 import org.lando.api.utils.ReadJsonData;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class BookingService {
+    public record BookingResult(long bookingId, Response response, JsonNode payload) {}
     private final BookingClient bookingClient;
+    private static final String DEFAULT_AUTH_HEADER = "Basic YWRtaW46cGFzc3dvcmQxMjM=";
 
     public BookingService(BookingClient bookingClient) {
         this.bookingClient = bookingClient;
     }
 
+    /** Healthcheck / status validation **/
     public int validateStatusCode(String endpoint) {
         return bookingClient.validStatusCode(endpoint);
     }
 
-    public List<String> getBookingIds() {
+    /** Get all booking ids **/
+    public Response getBookingIds() {
         return bookingClient.getBookingIds();
     }
 
-    public HashMap<String, Object> createValidBooking(String payloadPath) {
-        try {
-            Response bookingResponse = bookingClient.createBooking(payloadPath);
-            long bookingId = bookingResponse.jsonPath().getLong("bookingid");
-            Response getResponse = bookingClient.getBookingByValidId(bookingId);
+    /** Create booking and return full result **/
+    public BookingResult createValidBooking(String payloadPath) {
+        Response createResponse  = bookingClient.createBooking(payloadPath);
+        long bookingId = createResponse .jsonPath().getLong("bookingid");
+        Response getResponse = bookingClient.getBookingByValidId(bookingId);
+        JsonNode jsonNode = ReadJsonData.getJsonNode(payloadPath);
 
-            HashMap<String, Object> result = new HashMap<>();
-            result.put("bookingId", bookingId);
-            result.put("getResponse", getResponse);
-            result.put("jsonNode", ReadJsonData.getJsonNode(payloadPath));
+        return new BookingResult(bookingId, getResponse, jsonNode);
 
-            return result;
-        } catch (ApiException e) {
-            throw new ApiException(
-                    "Failed to create booking: " + e.getMessage(),
-                    e.getStatusCode(),
-                    e.getResponseBody(),
-                    e.getEndpoint()
-            );
-        }
     }
 
-    public HashMap<String, Object> validateBookingById(String payloadPath) {
-        HashMap<String, Object> obj = new HashMap<>();
-
+    /** Validate booking retrieval by id **/
+    public BookingResult validateBookingById(String payloadPath) {
         Response createBookingResponse = bookingClient.createBooking(payloadPath);
         long bookingId = createBookingResponse.jsonPath().getLong("bookingid");
         Response getResponse = bookingClient.getBookingByValidId(bookingId);
+        JsonNode jsonNode = ReadJsonData.getJsonNode(payloadPath);
 
         System.out.println("Response: " + getResponse.getBody().asString());
 
-        obj.put("getResponse", getResponse);
-        obj.put("bookingId", bookingId);
-
-        return obj;
+        return new BookingResult(bookingId, getResponse, jsonNode);
     }
 
-    public HashMap<String, Object> validateUpdatedBooking(String payloadPath) {
-        HashMap<String, Object> obj = new HashMap<>();
-
-        Response createBookingResponse = bookingClient.createBooking("booking/updateBooking");
+    /** Update an existing booking **/
+    public BookingResult validateUpdatedBooking(String payloadPath) {
+        Response createBookingResponse = bookingClient.createBooking(payloadPath);
         long bookingId = createBookingResponse.jsonPath().getLong("bookingid");
-        Response updateBookingResponse = bookingClient.updateBooking("booking/updateBooking", bookingId);
-        Response getResponse = bookingClient.getBookingByValidId(bookingId);
-        JsonNode jsonNode = ReadJsonData.getJsonNode("booking/updateBooking");
 
-        obj.put("updateBookingResponse", updateBookingResponse);
-        obj.put("getResponse", getResponse);
-        obj.put("jsonNode", jsonNode);
-        obj.put("bookingId", bookingId);
+        Response updateBookingResponse = bookingClient.updateBooking(payloadPath, bookingId, DEFAULT_AUTH_HEADER);
+        //Response getResponse = bookingClient.getBookingByValidId(bookingId);
+        JsonNode jsonNode = ReadJsonData.getJsonNode(payloadPath);
 
-        return obj;
+        return new BookingResult(bookingId, updateBookingResponse, jsonNode);
     }
 
 
-    public HashMap<String, Object> validateDeletedBooking(String payloadPath) {
-        HashMap<String, Object> obj = new HashMap<>();
+    /** Delete a booking **/
+    public Response validateDeletedBooking(String payloadPath) {
+        Response createResponse = bookingClient.createBooking(payloadPath);
+        long bookingId = createResponse.jsonPath().getLong("bookingid");
 
-        Response createBooking = bookingClient.createBooking("booking/postBooking");
-        long bookingId = createBooking.jsonPath().getLong("bookingid");
-        Response deleteBookingResponse = bookingClient.deleteBooking(bookingId);
-        Response getBookingResponse = bookingClient.getBookingByValidId(bookingId);
-
-        obj.put("deleteBookingResponse", deleteBookingResponse);
-        obj.put("getBookingResponse", getBookingResponse);
-
-        return obj;
+        return bookingClient.deleteBooking(bookingId, DEFAULT_AUTH_HEADER);
     }
 
-    public Response getBookingByInvalidId(long invalidBookingId) {
-        Response getInvalidBookingResponse = bookingClient.getBookingByValidId(invalidBookingId);
-
-        System.out.println("Invalid Id response: " + getInvalidBookingResponse.getBody().asString());
-
-        return getInvalidBookingResponse;
+    /** Get booking with an invalid id **/
+    public Response getBookingByIdRaw(long invalidBookingId) {
+        return bookingClient.getBookingByIdRaw(invalidBookingId);
     }
 
-    public Response getMalformedEndpoint() {
-        Response createBooking = bookingClient.createBooking("booking/postBooking");
-        long bookingId = createBooking.jsonPath().getLong("bookingid");
-        Response getBookingResponse = bookingClient.getMalformedEndpoint(bookingId);
-
-        System.out.println("Malformed endpoint response: " + getBookingResponse.getBody().asString());
-
-        return getBookingResponse;
+    /** Call malformed endpoint **/
+    public Response getMalformedEndpoint(String payloadPath) {
+        Response createResponse = bookingClient.createBooking(payloadPath);
+        long bookingId = createResponse.jsonPath().getLong("bookingid");
+        return bookingClient.getMalformedEndpointRaw(bookingId);
     }
 
+    /** Schema validations **/
     public Response getBookingCreationResponseSchema() {
         return bookingClient.getBookingCreationResponseSchema();
     }
