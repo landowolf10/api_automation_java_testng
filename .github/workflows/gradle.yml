@@ -7,23 +7,21 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
+      # Build Docker image
       - name: Build Docker image
         run: docker build -t gradle-tests .
 
-      - name: Run tests and generate Allure report
-        run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/app \
-            -w /app \
-            gradle-tests \
-            ./gradlew clean test allureReport
+      # Run tests and generate Allure report inside Docker
+      - name: Run tests inside Docker
+        run: docker run --rm gradle-tests ./gradlew clean test allureReport
 
+      # Upload Allure Report as artifact
       - name: Upload Allure Report Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -32,20 +30,22 @@ jobs:
           retention-days: 5
 
   deploy-allure:
-    needs: build
+    needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
 
+      # Download Allure artifact
       - name: Download Allure artifact
         uses: actions/download-artifact@v4
         with:
           name: allure-report
           path: allure-report
 
-      - name: Deploy Allure report to GitHub Pages
+      # Deploy Allure report to GitHub Pages
+      - name: Deploy Allure report
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
