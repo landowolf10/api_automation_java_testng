@@ -23,7 +23,7 @@ public class BookingObjectMapper {
              * need/want to change some values
              * i.e: bookingRequest.setFirstname("John");
              */
-            //bookingRequest.setFirstname("Luis Orlando");
+            bookingRequest.setFirstname("John");
 
             /*
              * We can also add dynamic keys to the json
