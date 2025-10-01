@@ -1,22 +1,18 @@
 version: 2.1
 jobs:
   build:
-    docker:
-      - image: circleci/openjdk:17-buster-node-browsers
+    machine: true
     steps:
       - checkout
       - run:
-          name: Run Selenium Tests
-          command: |
-            chmod +x gradlew
-             ./gradlew clean test
+          name: Build Docker image
+          command: docker build -t restassured-tests .
+      - run:
+          name: Run tests inside container
+          command: docker run --rm gradle-tests ./gradlew clean test allureReport
       - store_artifacts:
-          path: allure-report
+          path: build/reports/allure-report
           destination: allure-report
-
-      - store_artifacts:
-          path: test-output/ExtentReport.html
-          destination: extent-report
 
 workflows:
   version: 2
