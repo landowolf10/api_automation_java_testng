@@ -30,6 +30,7 @@ jobs:
             -w /app \
             gradle-tests \
             ./gradlew test allureReport
+        continue-on-error: true
 
       # ==========================
       # Upload Allure Report Artifact

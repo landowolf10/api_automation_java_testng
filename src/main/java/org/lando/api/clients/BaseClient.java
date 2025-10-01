@@ -64,6 +64,6 @@ public abstract class BaseClient {
     private void logResponse(String method, String endpoint, Response response) {
         System.out.printf("📌 %s %s%n", method, endpoint);
         System.out.printf("💬 Status: %d%n", response.statusCode());
-        System.out.printf("📄 Response: %s%n", response.getBody().asPrettyString());
+        //System.out.printf("📄 Response: %s%n", response.getBody().asPrettyString());
     }
 }

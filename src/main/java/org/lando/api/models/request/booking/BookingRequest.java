@@ -1,73 +1,91 @@
 package org.lando.api.models.request.booking;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class BookingRequest {
     @JsonProperty("firstname")
-    private String firstname;
+    private String firstName;
 
     @JsonProperty("lastname")
-    private String lastname;
+    private String lastName;
 
     @JsonProperty("totalprice")
-    private int totalprice;
+    private int totalPrice;
 
     @JsonProperty("depositpaid")
-    private boolean depositpaid;
+    private boolean depositPaid;
 
     @JsonProperty("bookingdates")
-    private BookingDates bookingdates;
+    private BookingDates bookingDates;
 
     @JsonProperty("additionalneeds")
-    private String additionalneeds;
+    private String additionalNeeds;
+
+    // Add dynamic keys
+    private Map<String, Object> extraFields = new HashMap<>();
+
+    @JsonAnySetter
+    public void setExtraField(String key, Object value) {
+        extraFields.put(key, value);
+    }
+
+    @JsonAnyGetter
+    public Map<String, Object> getExtraFields() {
+        return extraFields;
+    }
 
     // Getters and setters
     public String getFirstname() {
-        return firstname;
+        return firstName;
     }
 
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
+    public void setFirstname(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getLastname() {
-        return lastname;
+        return lastName;
     }
 
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
+    public void setLastname(String lastName) {
+        this.lastName = lastName;
     }
 
     public int getTotalprice() {
-        return totalprice;
+        return totalPrice;
     }
 
-    public void setTotalprice(int totalprice) {
-        this.totalprice = totalprice;
+    public void setTotalprice(int totalPrice) {
+        this.totalPrice = totalPrice;
     }
 
     public boolean isDepositpaid() {
-        return depositpaid;
+        return depositPaid;
     }
 
-    public void setDepositpaid(boolean depositpaid) {
-        this.depositpaid = depositpaid;
+    public void setDepositpaid(boolean depositPaid) {
+        this.depositPaid = depositPaid;
     }
 
     public BookingDates getBookingdates() {
-        return bookingdates;
+        return bookingDates;
     }
 
-    public void setBookingdates(BookingDates bookingdates) {
-        this.bookingdates = bookingdates;
+    public void setBookingdates(BookingDates bookingDates) {
+        this.bookingDates = bookingDates;
     }
 
     public String getAdditionalneeds() {
-        return additionalneeds;
+        return additionalNeeds;
     }
 
-    public void setAdditionalneeds(String additionalneeds) {
-        this.additionalneeds = additionalneeds;
+    public void setAdditionalneeds(String additionalNeeds) {
+        this.additionalNeeds = additionalNeeds;
     }
 }
 
