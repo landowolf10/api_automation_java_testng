@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: Java CI with Gradle + Allure
 
 on:
   push:
@@ -13,26 +13,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # ==========================
       # Build Docker image
+      # ==========================
       - name: Build Docker image
         run: docker build -t gradle-tests .
 
-      # Run tests and generate Allure report inside Docker
-      - name: Run tests inside Docker
+      # ==========================
+      # Run tests inside Docker
+      # ==========================
+      # Montamos la carpeta build del runner para que el reporte salga del contenedor
+      - name: Run tests and generate Allure report
         run: |
           docker run --rm \
             -v ${{ github.workspace }}/build:/app/build \
+            -w /app \
             gradle-tests \
             ./gradlew clean test allureReport
 
-      - name: Upload Allure Report Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: build/reports/allure-report
-          retention-days: 5
-
-      # Upload Allure Report as artifact
+      # ==========================
+      # Upload Allure Report Artifact
+      # ==========================
       - name: Upload Allure Report Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -48,14 +49,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # ==========================
       # Download Allure artifact
+      # ==========================
       - name: Download Allure artifact
         uses: actions/download-artifact@v4
         with:
           name: allure-report
           path: allure-report
 
+      # ==========================
       # Deploy Allure report to GitHub Pages
+      # ==========================
       - name: Deploy Allure report
         uses: peaceiris/actions-gh-pages@v3
         with:
