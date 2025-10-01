@@ -9,7 +9,11 @@ jobs:
           command: docker build -t restassured-tests .
       - run:
           name: Run tests inside container
-          command: docker run --rm restassured-tests ./gradlew clean test allureReport
+          command: |
+            docker run --rm \
+              -v $(pwd)/build:/app/build \
+              restassured-tests \
+              ./gradlew clean test allureReport
       - store_artifacts:
           path: build/reports/allure-report
           destination: allure-report
