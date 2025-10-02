@@ -37,8 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # 👈 Trae todo el historial
-          ref: gh-pages    # 👈 Chequea la rama gh-pages, no main
+          fetch-depth: 0
+          ref: gh-pages
 
       - name: Download Allure artifact
         uses: actions/download-artifact@v4
@@ -51,7 +51,7 @@ jobs:
           mkdir -p reports/${{ github.run_number }}
           cp -r allure-report/* reports/${{ github.run_number }}
 
-          # === Metadata de la ejecución ===
+          # Metadata de la ejecución
           RUN=${{ github.run_number }}
           SHA=${{ github.sha }}
           MSG="${{ github.event.head_commit.message }}"
@@ -60,16 +60,14 @@ jobs:
 
           META_FILE=metadata.json
 
-          # Si no existe metadata.json lo creamos
           if [ ! -f $META_FILE ]; then
             echo "[]" > $META_FILE
           fi
 
-          # Agregar el registro al JSON
           tmp=$(mktemp)
           jq ". + [{\"run\": \"$RUN\", \"sha\": \"$SHA\", \"msg\": \"$MSG\", \"author\": \"$AUTHOR\", \"date\": \"$DATE\", \"link\": \"reports/$RUN/index.html\"}]" $META_FILE > "$tmp" && mv "$tmp" $META_FILE
 
-          # === Generar dashboard con Bootstrap ===
+          # Generar dashboard con Bootstrap y paginación
           DASHBOARD=index.html
           cat > $DASHBOARD <<'EOF'
           <!DOCTYPE html>
@@ -84,29 +82,67 @@ jobs:
             <div class="container py-5">
               <h1 class="mb-4 text-center">📊 Allure Reports Dashboard</h1>
               <div id="reports" class="row g-4"></div>
+              <div class="d-flex justify-content-center mt-4">
+                <nav>
+                  <ul id="pagination" class="pagination"></ul>
+                </nav>
+              </div>
             </div>
 
             <script>
               fetch('metadata.json')
                 .then(r => r.json())
                 .then(data => {
+                  data.reverse();
                   const container = document.getElementById('reports');
-                  data.reverse().forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'col-md-6 col-lg-4';
-                    card.innerHTML = `
-                      <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                          <h5 class="card-title">Run #${item.run}</h5>
-                          <p class="card-text"><strong>Commit:</strong> ${item.sha.substring(0,7)}<br>
-                          <strong>Message:</strong> ${item.msg}<br>
-                          <strong>Author:</strong> ${item.author}<br>
-                          <strong>Date:</strong> ${item.date}</p>
-                          <a href="${item.link}" class="btn btn-primary" target="_blank">View Report</a>
-                        </div>
-                      </div>`;
-                    container.appendChild(card);
-                  });
+                  const pageSize = 9;
+                  let currentPage = 1;
+                  const totalPages = Math.ceil(data.length / pageSize);
+
+                  function renderPage(page) {
+                    container.innerHTML = '';
+                    const start = (page - 1) * pageSize;
+                    const end = start + pageSize;
+                    const pageData = data.slice(start, end);
+
+                    pageData.forEach(item => {
+                      const card = document.createElement('div');
+                      card.className = 'col-md-6 col-lg-4';
+                      card.innerHTML = `
+                        <div class="card shadow-sm h-100">
+                          <div class="card-body">
+                            <h5 class="card-title">Run #${item.run}</h5>
+                            <p class="card-text"><strong>Commit:</strong> ${item.sha.substring(0,7)}<br>
+                            <strong>Message:</strong> ${item.msg}<br>
+                            <strong>Author:</strong> ${item.author}<br>
+                            <strong>Date:</strong> ${item.date}</p>
+                            <a href="${item.link}" class="btn btn-primary" target="_blank">View Report</a>
+                          </div>
+                        </div>`;
+                      container.appendChild(card);
+                    });
+
+                    renderPagination();
+                  }
+
+                  function renderPagination() {
+                    const pagination = document.getElementById('pagination');
+                    pagination.innerHTML = '';
+
+                    for (let i = 1; i <= totalPages; i++) {
+                      const li = document.createElement('li');
+                      li.className = 'page-item ' + (i === currentPage ? 'active' : '');
+                      li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                      li.addEventListener('click', e => {
+                        e.preventDefault();
+                        currentPage = i;
+                        renderPage(currentPage);
+                      });
+                      pagination.appendChild(li);
+                    }
+                  }
+
+                  renderPage(currentPage);
                 });
             </script>
           </body>
