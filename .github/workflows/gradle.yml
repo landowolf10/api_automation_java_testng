@@ -25,7 +25,7 @@ jobs:
       - name: Run tests and generate Allure report
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}:/app \
+            -v ${{ github.workspace }}/build:/app/build \
             -w /app \
             gradle-tests \
             ./gradlew test allureReport
@@ -35,7 +35,7 @@ jobs:
       # Upload Allure Report Artifact
       # ==========================
       - name: Upload Allure Report Artifact
-        if: always()   # <--- asegura que SIEMPRE se intente subir
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-report

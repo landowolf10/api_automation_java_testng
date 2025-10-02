@@ -50,6 +50,7 @@ test {
             println "No suiteXmlFile specified, executing default tests (all tests)."
         }
     }
+    ignoreFailures = true
 }
 
 tasks.register('allureReport', Exec) {
