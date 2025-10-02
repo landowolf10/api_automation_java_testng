@@ -22,7 +22,6 @@ jobs:
       # ==========================
       # Run tests inside Docker
       # ==========================
-      # Montamos la carpeta build del runner para que el reporte salga del contenedor
       - name: Run tests and generate Allure report
         run: |
           docker run --rm \
@@ -30,12 +29,13 @@ jobs:
             -w /app \
             gradle-tests \
             ./gradlew test allureReport
-        continue-on-error: true
+        continue-on-error: true   # <--- garantiza que el job siga aunque fallen tests
 
       # ==========================
       # Upload Allure Report Artifact
       # ==========================
       - name: Upload Allure Report Artifact
+        if: always()   # <--- asegura que SIEMPRE se intente subir
         uses: actions/upload-artifact@v4
         with:
           name: allure-report
