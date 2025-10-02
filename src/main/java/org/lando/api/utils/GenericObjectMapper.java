@@ -63,13 +63,13 @@ public class GenericObjectMapper {
              * metadata.put("duration", "365d");
              * ((BookingRequest)object).getBookingdates().setExtraField("metadata", metadata);
              */
-            if (object instanceof BookingRequest) {
+            /*if (object instanceof BookingRequest) {
                 Map<String, Object> metadata = new HashMap<>();
                 metadata.put("timezone", "UTC");
                 metadata.put("duration", "365d");
 
                 ((BookingRequest)object).getBookingdates().setExtraField("metadata", metadata);
-            }
+            }*/
 
             /*
              * We can also create lists
