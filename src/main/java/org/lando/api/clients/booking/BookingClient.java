@@ -3,6 +3,8 @@ package org.lando.api.clients.booking;
 import org.lando.api.clients.BaseClient;
 import io.restassured.response.Response;
 import org.lando.api.exceptions.ApiException;
+import org.lando.api.models.request.booking.BookingRequest;
+import org.lando.api.utils.GenericObjectMapper;
 
 import java.util.List;
 
@@ -22,13 +24,13 @@ public class BookingClient extends BaseClient {
     }
 
     public Response createBooking(String postJsonFile) {
-        String bookingJson = BookingObjectMapper.bookingObjectMapper(postJsonFile);
+        String bookingJson = GenericObjectMapper.mapJsonToObject(postJsonFile, BookingRequest.class);
 
         return post(BASE_ENDPOINT, bookingJson);
     }
 
     public Response updateBooking(String updateJsonFile, long bookingIdUpdate, String authHeader) {
-        String bookingJson = BookingObjectMapper.bookingObjectMapper(updateJsonFile);
+        String bookingJson = GenericObjectMapper.mapJsonToObject(updateJsonFile, BookingRequest.class);
 
         return put(BASE_ENDPOINT + "/" + bookingIdUpdate, bookingJson, authHeader);
     }
