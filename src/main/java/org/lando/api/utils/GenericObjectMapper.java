@@ -68,6 +68,7 @@ public class GenericObjectMapper {
                 metadata.put("timezone", "UTC");
                 metadata.put("duration", "365d");
 
+
                 ((BookingRequest)object).getBookingdates().setExtraField("metadata", metadata);
             }*/
 
