@@ -25,11 +25,11 @@ jobs:
       - name: Run tests and generate Allure report
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}/build:/app/build \
+            -v ${{ github.workspace }}:/app \
             -w /app \
             gradle-tests \
             ./gradlew test allureReport
-        continue-on-error: true   # <--- garantiza que el job siga aunque fallen tests
+        continue-on-error: true
 
       # ==========================
       # Upload Allure Report Artifact
