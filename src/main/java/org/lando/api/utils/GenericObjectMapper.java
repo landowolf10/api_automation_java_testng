@@ -3,6 +3,11 @@ package org.lando.api.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.lando.api.models.request.booking.BookingRequest;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class GenericObjectMapper {
     /**
      * Converts a JSON to an object of any class and returns a formatted JSON.
@@ -46,7 +51,9 @@ public class GenericObjectMapper {
              * we need to get the value with the getter
              * i.e: ((BookingRequest)object).getBookingdates().setExtraField("timezone", "UTC");
              */
-            //((BookingRequest)object).getBookingdates().setExtraField("timezone", "UTC");
+            /*if (object instanceof BookingRequest) {
+                ((BookingRequest)object).getBookingdates().setExtraField("timezone", "UTC");
+            }*/
 
             /*
              * We can also create objects inside the object
@@ -56,12 +63,13 @@ public class GenericObjectMapper {
              * metadata.put("duration", "365d");
              * ((BookingRequest)object).getBookingdates().setExtraField("metadata", metadata);
              */
+            if (object instanceof BookingRequest) {
+                Map<String, Object> metadata = new HashMap<>();
+                metadata.put("timezone", "UTC");
+                metadata.put("duration", "365d");
 
-            /*Map<String, Object> metadata = new HashMap<>();
-            metadata.put("timezone", "UTC");
-            metadata.put("duration", "365d");
-
-            ((BookingRequest)object).getBookingdates().setExtraField("metadata", metadata);*/
+                ((BookingRequest)object).getBookingdates().setExtraField("metadata", metadata);
+            }
 
             /*
              * We can also create lists
@@ -69,9 +77,10 @@ public class GenericObjectMapper {
              * List<String> holidays = Arrays.asList("2023-12-25", "2024-01-01");
              * ((BookingRequest)object).getBookingdates().setExtraField("holidays", holidays);
              */
-
-            /*List<String> holidays = Arrays.asList("2023-12-25", "2024-01-01");
-            ((BookingRequest)object).getBookingdates().setExtraField("holidays", holidays);*/
+            /*if (object instanceof BookingRequest) {
+                List<String> holidays = Arrays.asList("2023-12-25", "2024-01-01");
+                ((BookingRequest)object).getBookingdates().setExtraField("holidays", holidays);
+            }*/
 
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
         } catch (Exception e) {
