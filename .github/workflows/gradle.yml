@@ -3,8 +3,6 @@ name: Java CI with Gradle + Allure
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build-and-test:
@@ -13,15 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ==========================
-      # Build Docker image
-      # ==========================
       - name: Build Docker image
         run: docker build -t gradle-tests .
 
-      # ==========================
-      # Run tests inside Docker
-      # ==========================
       - name: Run tests and generate Allure report
         run: |
           docker run --rm \
@@ -30,9 +22,6 @@ jobs:
             gradle-tests \
             ./gradlew test allureReport
 
-      # ==========================
-      # Upload Allure Report Artifact
-      # ==========================
       - name: Upload Allure Report Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -48,21 +37,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ==========================
-      # Download Allure artifact
-      # ==========================
       - name: Download Allure artifact
         uses: actions/download-artifact@v4
         with:
           name: allure-report
           path: allure-report
 
-      # ==========================
-      # Deploy Allure report to GitHub Pages
-      # ==========================
-      - name: Deploy Allure report
+      - name: Prepare deploy folder
+        run: |
+          mkdir -p gh-pages/reports/${{ github.run_number }}
+          cp -r allure-report/* gh-pages/reports/${{ github.run_number }}
+
+          # Crear o actualizar el dashboard (index.html)
+          DASHBOARD=gh-pages/index.html
+          echo "<html><head><title>Allure Reports Dashboard</title></head><body>" > $DASHBOARD
+          echo "<h1>Allure Reports Dashboard</h1><ul>" >> $DASHBOARD
+          for dir in $(ls gh-pages/reports); do
+            echo "<li><a href='reports/$dir/index.html'>Report $dir</a></li>" >> $DASHBOARD
+          done
+          echo "</ul></body></html>" >> $DASHBOARD
+
+      - name: Deploy Allure reports and dashboard
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./allure-report
-          keep_files: true
+          publish_dir: gh-pages
+          keep_files: true   # 👈 Mantiene histórico de reports
