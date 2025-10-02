@@ -1,0 +1,3 @@
+Status: 418
+Endpoint: /booking
+Response: I'm a Teapot
