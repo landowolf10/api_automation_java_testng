@@ -30,9 +30,9 @@ public class GenericObjectMapper {
              *     ((BookingRequest)object).setFirstname("John");
              * }
              */
-            if (object instanceof BookingRequest) {
+            /*if (object instanceof BookingRequest) {
                 ((BookingRequest)object).setFirstname("John");
-            }
+            }*/
 
             /*
              * We can also add dynamic keys to the json
