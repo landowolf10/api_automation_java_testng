@@ -22,5 +22,13 @@
     "author": "Orlando Avila",
     "date": "2025-10-02 19:30:34 UTC",
     "link": "reports/35/index.html"
+  },
+  {
+    "run": "36",
+    "sha": "760febcf19d0addc7c8c358c294e2a531fe55623",
+    "msg": "Create historic dashboard for allure reports in GitHub Pages.",
+    "author": "Orlando Avila",
+    "date": "2025-10-02 19:33:14 UTC",
+    "link": "reports/36/index.html"
   }
 ]
