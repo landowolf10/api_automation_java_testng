@@ -5,45 +5,45 @@ import org.lando.api.models.request.booking.BookingDates;
 
 public class BookingResponse {
     @JsonProperty("firstname")
-    private String firstname;
+    private String firstName;
 
     @JsonProperty("lastname")
-    private String lastname;
+    private String lastName;
 
     @JsonProperty("totalprice")
-    private int totalprice;
+    private int totalPrice;
 
     @JsonProperty("depositpaid")
-    private boolean depositpaid;
+    private boolean depositPaid;
 
     @JsonProperty("bookingdates")
-    private BookingDates bookingdates;
+    private BookingDates bookingDates;
 
     @JsonProperty("additionalneeds")
-    private String additionalneeds;
+    private String additionalNeeds;
 
     public String getFirstname() {
-        return firstname;
+        return firstName;
     }
 
     public String getLastname() {
-        return lastname;
+        return lastName;
     }
 
     public int getTotalprice() {
-        return totalprice;
+        return totalPrice;
     }
 
     public boolean isDepositpaid() {
-        return depositpaid;
+        return depositPaid;
     }
 
     public BookingDates getBookingdates() {
-        return bookingdates;
+        return bookingDates;
     }
 
     public String getAdditionalneeds() {
-        return additionalneeds;
+        return additionalNeeds;
     }
 }
 

@@ -10,18 +10,25 @@ import static io.restassured.RestAssured.given;
 public abstract class BaseClient {
 
     protected RequestSpecification requestSpec() {
-        return given().spec(RestAssuredConfig.getRequestSpec());
+        return given()
+               .spec(RestAssuredConfig
+               .getRequestSpec());
     }
 
     protected Response get(String endpoint) {
-        Response response = requestSpec().when().get(endpoint);
+        Response response = requestSpec()
+                            .when()
+                            .get(endpoint);
         logResponse("GET", endpoint, response);
         validateResponse(response, "GET", endpoint);
         return response;
     }
 
     protected Response post(String endpoint, Object body) {
-        Response response = requestSpec().body(body).when().post(endpoint);
+        Response response = requestSpec()
+                            .body(body)
+                            .when()
+                            .post(endpoint);
         logResponse("POST", endpoint, response);
         validateResponse(response, "POST", endpoint);
         return response;

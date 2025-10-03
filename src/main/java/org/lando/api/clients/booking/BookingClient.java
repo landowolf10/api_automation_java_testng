@@ -2,7 +2,6 @@ package org.lando.api.clients.booking;
 
 import org.lando.api.clients.BaseClient;
 import io.restassured.response.Response;
-import org.lando.api.exceptions.ApiException;
 import org.lando.api.models.request.booking.BookingRequest;
 import org.lando.api.utils.GenericObjectMapper;
 

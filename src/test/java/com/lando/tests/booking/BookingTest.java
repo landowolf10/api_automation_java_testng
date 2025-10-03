@@ -12,7 +12,6 @@ import org.testng.Assert;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.HashMap;
 
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
@@ -67,10 +66,6 @@ public class BookingTest extends BaseTest {
             JsonNode jsonNode = result.payload();
             long bookingId = result.bookingId();
 
-            /*Allure.getLifecycle().updateTestCase(testResult -> {
-                testResult.setName("Validates that the API is creating a booking");
-            });*/
-
             Assert.assertEquals(getResponse.statusCode(), 200);
             Assert.assertNotNull(getResponse.getBody());
             Assert.assertTrue(bookingId > 0);
@@ -86,7 +81,7 @@ public class BookingTest extends BaseTest {
             bookingService.getBookingCreationResponseSchema()
                     .then()
                     .assertThat()
-                    .body(matchesJsonSchemaInClasspath("json_schemas/postPetResponseSchema.json"));
+                    .body(matchesJsonSchemaInClasspath(CREATE_SCHEMA));
         } catch (ApiException e) {
             Allure.addAttachment("Error Details", "text/plain",
                     "Status: " + e.getStatusCode() + "\n" +
@@ -113,7 +108,7 @@ public class BookingTest extends BaseTest {
         bookingService.getBookingSchema(bookingId)
                 .then()
                 .assertThat()
-                .body(matchesJsonSchemaInClasspath("json_schemas/getBookingSchema.json"));
+                .body(matchesJsonSchemaInClasspath(GET_SCHEMA));
     }
 
     //Update existing booking
@@ -155,7 +150,7 @@ public class BookingTest extends BaseTest {
     }
 
     /*********************************************Edge cases*********************************************/
-    //Get error when trying to get a bookin by id with an unexisting id
+    //Get error when trying to get a booking by id with an unexisting id
     @Test(description = "Validates the response when trying to get a booking by invalid id")
     @Severity(SeverityLevel.MINOR)
     public void getBookingByIdRaw() {
@@ -172,18 +167,4 @@ public class BookingTest extends BaseTest {
         Assert.assertEquals(malformedResponse.getStatusCode(), 404);
         Assert.assertEquals(malformedResponse.getBody().asString(), "Not Found");
     }
-
-    //Get error when trying to add a pet with a wrong/malformed endpoint
-
-    //Get error when trying to add a pet with an empty body
-
-    //Get error when trying to add a pet with a wrong/malformed body
-
-    //Get error when trying to update an unexisting pet
-
-    //Get error when trying to update a pet with an empty body
-
-    //Get error when trying to update a pet with a wrong/malformed body
-
-    //Get error when trying to delete an unexisting pet
 }

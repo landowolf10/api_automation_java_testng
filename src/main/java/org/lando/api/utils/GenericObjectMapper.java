@@ -1,12 +1,6 @@
 package org.lando.api.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.lando.api.models.request.booking.BookingRequest;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class GenericObjectMapper {
     /**

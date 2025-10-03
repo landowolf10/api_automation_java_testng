@@ -5,8 +5,6 @@ import io.restassured.response.Response;
 import org.lando.api.clients.booking.BookingClient;
 import org.lando.api.utils.ReadJsonData;
 
-import java.util.HashMap;
-import java.util.List;
 
 public class BookingService {
     public record BookingResult(long bookingId, Response response, JsonNode payload) {}

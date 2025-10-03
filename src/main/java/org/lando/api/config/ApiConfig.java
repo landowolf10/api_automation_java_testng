@@ -1,17 +1,16 @@
 package org.lando.api.config;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
 public class ApiConfig {
     private static Properties properties;
 
-    // Ruta del archivo de configuración
+    // Configuration file path
     private static final String CONFIG_PATH = "src/test/resources/application.properties";
 
-    // Variables de entorno
+    // Env variables
     public static String BASE_URL;
     public static int TIMEOUT;
     public static String AUTH_TOKEN;
@@ -28,7 +27,7 @@ public class ApiConfig {
         properties = new Properties();
         try (FileInputStream input = new FileInputStream(CONFIG_PATH)) {
             properties.load(input);
-            BASE_URL = properties.getProperty("base.url", "https://restful-booker.herokuapp.com");
+            BASE_URL = properties.getProperty("base.url", BASE_URL);
             TIMEOUT = Integer.parseInt(properties.getProperty("timeout", "5000"));
             //AUTH_TOKEN = properties.getProperty("auth.token", "defaultToken");
             ENVIRONMENT = properties.getProperty("environment", "dev");

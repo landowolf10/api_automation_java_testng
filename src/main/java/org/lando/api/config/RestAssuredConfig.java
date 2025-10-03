@@ -26,9 +26,9 @@ public class RestAssuredConfig {
     }
 
     /**
-     * Método para crear una RequestSpecification personalizada.
-     * @param headers - Headers adicionales.
-     * @return RequestSpecification modificada.
+     * Method to create a custom RequestSpecification.
+     * @param headers - Additional headers.
+     * @return Modified RequestSpecification.
      */
     /*protected RequestSpecification getRequestWithHeaders(Map<String, String> headers) {
         return RestAssured.given()
@@ -38,10 +38,10 @@ public class RestAssuredConfig {
     }*/
 
     /**
-     * Limpieza después de ejecutar la suite de pruebas.
+     * Cleaning after test suite execution
      */
     /*@AfterSuite(alwaysRun = true)
     public void tearDown() {
-        System.out.println("✅ Suite de pruebas completada.");
+        System.out.println("✅ Test suite completed.");
     }*/
 }
